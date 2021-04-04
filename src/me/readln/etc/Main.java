@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.awt.Color;
-import java.util.*;
 
 public class Main {
 
@@ -56,31 +55,8 @@ public class Main {
 
         }
 
-
         // ASCII symbols for picture "pixels"
-
-        Map<Integer, Character> asciiGreyscale = new TreeMap<>();
-
-        asciiGreyscale.put(0,   ' ');
-        asciiGreyscale.put(1,   '.');
-        asciiGreyscale.put(2,   '\'');
-        asciiGreyscale.put(3,   '^');
-        asciiGreyscale.put(4,   ',');
-        asciiGreyscale.put(5,   ':');
-        asciiGreyscale.put(6,   ';');
-        asciiGreyscale.put(7,   '±');
-        asciiGreyscale.put(8,   '*');
-        asciiGreyscale.put(9,   '1');
-        asciiGreyscale.put(10,  '7');
-        asciiGreyscale.put(11,  '2');
-        asciiGreyscale.put(12,  '3');
-        asciiGreyscale.put(13,  '%');
-        asciiGreyscale.put(14,  '#');
-        asciiGreyscale.put(15,  '&');
-        asciiGreyscale.put(16,  '$');
-        asciiGreyscale.put(17,  '0');
-        asciiGreyscale.put(18,  '@');
-        asciiGreyscale.put(19,  '8');
+        char[] asciiGreyscale = {' ', '.', '\'', '^', ',', ':', ';', '±', '*', '1', '7', '2', '3', '%', '#', '&', '$', '0', '@', '8'};
 
         File file;
 
@@ -162,7 +138,7 @@ public class Main {
 
         // display
 
-        float step = 1.0f / asciiGreyscale.size();
+        float step = 1.0f / asciiGreyscale.length;
 
         for (int i = 0; i < asciiHeight; i++) {
 
@@ -174,10 +150,10 @@ public class Main {
 
                 double calculatedGrayscale = Math.pow((picInAsciiSize[i][j] / 256 ), 3);
 
-                for (int q = 0; q < asciiGreyscale.size(); q++) {
+                for (int q = 0; q < asciiGreyscale.length; q++) {
 
                     if ( (double)(step * q) < calculatedGrayscale && calculatedGrayscale <= (double)(step*(q+1))) {
-                        character = inversion ? asciiGreyscale.get(asciiGreyscale.size()-(q+1)) : asciiGreyscale.get(q);
+                        character = inversion ? asciiGreyscale[asciiGreyscale.length-(q+1)] : asciiGreyscale[q];
                         break;
                     }
                 }
