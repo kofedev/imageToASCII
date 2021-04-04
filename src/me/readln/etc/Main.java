@@ -56,7 +56,9 @@ public class Main {
         }
 
         // ASCII symbols for picture "pixels"
-        char[] asciiGreyscale = {' ', '.', '\'', '^', ',', ':', ';', '±', '*', '1', '7', '2', '3', '%', '#', '&', '$', '0', '@', '8'};
+        //char[] asciiGreyscale = {' ', '.', '\'', '^', ',', ':', ';', '±', '*', '1', '7', '2', '3', '%', '#', '&', '$', '0', '@', '8'};
+        char[] asciiGreyscale = {' ', '.', '\'', '^', ',', ':', ';', '±', '+', '=', '*', '1', '7', '2', '3', '4', '5', '%', '#', '&', '§', '$', '0', '@', '8'};
+
 
         File file;
 
@@ -80,8 +82,8 @@ public class Main {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        Integer asciiWidth  = asciiWidthDefault;
-        Integer asciiHeight = (asciiWidthDefault * height) / width;
+        Integer asciiWidth  = (asciiWidthDefault > width) ? width : asciiWidthDefault;
+        Integer asciiHeight = (asciiWidth * height) / width;
 
         float[][] pic = new float[height][width];
         float[][] picInAsciiSize = new float[asciiHeight][asciiWidth];
