@@ -1,8 +1,8 @@
 // Simple console "converter" from image to ASCII view
 // Gregory readln.me
-// ver 0.4
-// command line format: java -jar PicView.jar filename dimension i
-// dimension - is a width of ASCII output
+// ver 0.4a
+// command line format: java -jar PicView.jar filename [-dN] [-i]
+// where N is the dimension (width of ASCII output)
 // i - is a picture inversion option
 
 package me.readln.etc;
@@ -21,7 +21,6 @@ public class Main {
                                         '5', '6', 'A', 'C', 'D', '%', '#', '&', '§', '$', '0',
                                         'Q', '8', '@'};
 
-
     static String filename;
     static boolean inversion = false;
     static int asciiWidthDefault = 50;
@@ -31,12 +30,16 @@ public class Main {
 
     static int width;
     static int height;
-    static Integer asciiWidth;
-    static Integer asciiHeight;
+    static int asciiWidth;
+    static int asciiHeight;
     static double[][] picInAsciiSize;
 
     final static String MESSAGE_THERE_IS_NO_FILENAME_IN_COMMANDLINE = "Please, input filename in command line!";
     final static String MESSAGE_DIMENSIONS_SHOULD_BE_UNDER_ZERO     = "Dimensions should be > 0";
+
+    final static double RED_RATIO   = 0.2126;
+    final static double GREEN_RATIO = 0.7152;
+    final static double BLUE_RATIO  = 0.0722;
 
     static double[][] giveMeArray(int h, int w) {
         return new double[h][w];
@@ -44,26 +47,35 @@ public class Main {
 
     static void readArguments (String[] args) {
 
+        // get filename
+
         try {
             filename = args[0];
         } catch (Exception e) {
             System.out.println(MESSAGE_THERE_IS_NO_FILENAME_IN_COMMANDLINE);
         }
 
-        try {
-            int asciiWidthByUser = Integer.parseInt(args[1]);
+        // get other arguments
+
+        String arg1 = "  ";
+        String arg2 = "  ";
+        if (args.length == 2 || args.length == 3) arg1 = args[1];
+        if (args.length == 3) arg2 = args[2];
+
+        if (arg1.charAt(1) == 'd' || arg2.charAt(1) == 'd') {
+            String dimension = (arg1.charAt(1) == 'd') ? arg1.substring(2) : arg2.substring(2);
+            int asciiWidthByUser = Integer.parseInt(dimension);
             if (asciiWidthByUser <= 0) {
                 System.out.println(MESSAGE_DIMENSIONS_SHOULD_BE_UNDER_ZERO);
+            } else {
+                asciiWidthDefault = asciiWidthByUser;
             }
-            asciiWidthDefault = asciiWidthByUser;
-        } catch (Exception e) { }
+        }
 
-        try {
-            String inversionUserDecision = args[2];
-            if (inversionUserDecision.equals("i")) inversion = true;
-        } catch (Exception e) { }
+        if (arg1.charAt(1) == 'i' || arg2.charAt(1) == 'i') inversion = true;
 
     }
+
 
     static void linkFile() throws IIOException {
         file = new File(filename);
@@ -101,7 +113,7 @@ public class Main {
         for(int j = 0; j < width; j++) {
             Color color = new Color(imgSource.getRGB(j, indexCurrentCol));
             picture[indexCurrentCol][j] = BRIGHT_ADDITION +
-                    (color.getRed() * 0.2126 + color.getGreen() * 0.7152 + color.getBlue() * 0.0722);
+                    (color.getRed() * RED_RATIO + color.getGreen() * GREEN_RATIO + color.getBlue() * BLUE_RATIO);
         }
     }
 
