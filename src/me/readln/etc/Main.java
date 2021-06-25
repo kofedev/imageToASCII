@@ -1,18 +1,18 @@
 // Simple console "converter" from image to ASCII view
 // Gregory readln.me
-// ver 0.3
-// command line format: java -jar PicView.jar filename [dimension] [i]
+// ver 0.4
+// command line format: java -jar PicView.jar filename dimension i
 // dimension - is a width of ASCII output
 // i - is a picture inversion option
 
 package me.readln.etc;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
-import java.awt.Color;
 
 public class Main {
 
@@ -20,6 +20,7 @@ public class Main {
                                         '*', 'a', 'c', 'b', '1', '/', '7', '?', '2', '3', '4',
                                         '5', '6', 'A', 'C', 'D', '%', '#', '&', '§', '$', '0',
                                         'Q', '8', '@'};
+
 
     static String filename;
     static boolean inversion = false;
@@ -32,12 +33,7 @@ public class Main {
     static int height;
     static Integer asciiWidth;
     static Integer asciiHeight;
-    static double[][] pic;
     static double[][] picInAsciiSize;
-
-    static int newPixelSize;
-    static int picArrayForApproximateHeight;
-    static int picArrayForApproximateWidth;
 
     final static String MESSAGE_THERE_IS_NO_FILENAME_IN_COMMANDLINE = "Please, input filename in command line!";
     final static String MESSAGE_DIMENSIONS_SHOULD_BE_UNDER_ZERO     = "Dimensions should be > 0";
@@ -70,18 +66,9 @@ public class Main {
     }
 
     static void linkFile() throws IIOException {
-
         file = new File(filename);
-
     }
 
-    static void getGrayscaleValueFromPixelsInImageRowAndWriteToPic (int indexCurrentCol) {
-        for(int j = 0; j < width; j++) {
-            Color color = new Color(image.getRGB(j, indexCurrentCol));
-            pic[indexCurrentCol][j] = BRIGHT_ADDITION +
-                                (color.getRed() * 0.2126 + color.getGreen() * 0.7152 + color.getBlue() * 0.0722);
-        }
-    }
 
     static void printRow(double step, int indexCurrentCol) {
         for (int j = 0; j < asciiWidth; j++) {
@@ -106,58 +93,18 @@ public class Main {
         }
     }
 
-    static double[][] giveMeSubArray (double[][] source, int rowCoordSource, int colCoordSource, int subArraySize) {
 
-        double[][] subArray = giveMeArray(subArraySize, subArraySize);
-        int subArrayRowIndex;
-        int subArrayColIndex;
-        subArrayRowIndex = 0;
-        for (int row = rowCoordSource; row < rowCoordSource + subArraySize; row++) {
-            subArrayColIndex = 0;
-            for (int col = colCoordSource; col < colCoordSource + subArraySize; col++) {
-                subArray[subArrayRowIndex][subArrayColIndex] = source[row][col];
-                subArrayColIndex++;
-            }
-            subArrayRowIndex++;
+    static void getGrayscaleValueFromPixelsInImageRowAndWriteToPic (int indexCurrentCol,
+                                                                    BufferedImage imgSource,
+                                                                    double[][] picture,
+                                                                    int width) {
+        for(int j = 0; j < width; j++) {
+            Color color = new Color(imgSource.getRGB(j, indexCurrentCol));
+            picture[indexCurrentCol][j] = BRIGHT_ADDITION +
+                    (color.getRed() * 0.2126 + color.getGreen() * 0.7152 + color.getBlue() * 0.0722);
         }
-        return subArray;
     }
 
-    static double getAverageFromArray (double[][] pixel) {
-
-        double accumulator = 0;
-        for (int row = 0; row < pixel.length; row++)
-            for (int col = 0; col < pixel[0].length; col++)
-                accumulator += pixel[row][col];
-
-        return accumulator / (pixel.length * pixel[0].length);
-
-    }
-
-    static void approximate () {
-
-        int picInAsciiSizeRowIndex;
-        int picInAsciiSizeColIndex;
-
-        picInAsciiSizeRowIndex = 0;
-        for (int row = 0; row < picArrayForApproximateHeight; row += newPixelSize) {
-            picInAsciiSizeColIndex = 0;
-
-            for (int col = 0; col < picArrayForApproximateWidth; col += newPixelSize) {
-
-                double[][] pixel = giveMeSubArray(pic, row, col, newPixelSize);
-
-                picInAsciiSize[picInAsciiSizeRowIndex][picInAsciiSizeColIndex] =
-                        getAverageFromArray(pixel);
-
-                if (picInAsciiSizeColIndex < asciiWidth-1) picInAsciiSizeColIndex++;
-
-            }
-
-            if (picInAsciiSizeRowIndex < asciiHeight-1) picInAsciiSizeRowIndex++;
-        }
-
-    }
 
     public static void main(String[] args) {
 
@@ -178,37 +125,22 @@ public class Main {
 
         if (image != null) {
 
-            // basic calculation
-
             width = image.getWidth();
             height = image.getHeight();
 
             asciiWidth = Math.min(width, asciiWidthDefault);
             asciiHeight = (asciiWidth * height) / width;
-            newPixelSize = Math.min(width, height) / Math.min(asciiWidth, asciiHeight);
 
-            picArrayForApproximateHeight =
-                ( (height / newPixelSize) + ( (height % newPixelSize > 0) ? 1 : 0 ) )
-                        * newPixelSize;
-
-            picArrayForApproximateWidth =
-                ( (width / newPixelSize) + ( (width % newPixelSize > 0) ? 1 : 0 ) )
-                        * newPixelSize;
-
-            // get working arrays
-
-            pic = giveMeArray(picArrayForApproximateHeight, picArrayForApproximateWidth);
+            BufferedImage resizedImage = new BufferedImage(asciiWidth, asciiHeight, image.getType());
+            Graphics2D g2d = resizedImage.createGraphics();
+            g2d.drawImage(image, 0, 0, asciiWidth, asciiHeight, null);
+            g2d.dispose();
 
             picInAsciiSize = giveMeArray(asciiHeight, asciiWidth);
 
-            // get each pixels grayscale value from the image
-            for (int i = 0; i < height; i++)
-                getGrayscaleValueFromPixelsInImageRowAndWriteToPic(i);
+            for (int i = 0; i < asciiHeight; i++)
+                getGrayscaleValueFromPixelsInImageRowAndWriteToPic(i, resizedImage, picInAsciiSize, asciiWidth);
 
-            // approximate from original size to ASCII-picture size
-            approximate();
-
-            // final printing
             printASCIIpicture();
 
             System.out.println();
